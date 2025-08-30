@@ -23,7 +23,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(limiter);
-import cors from "cors";
+
 
 const allowedOrigins = [
   "http://localhost:5173", 
