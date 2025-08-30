@@ -43,17 +43,34 @@ app.get('/api/health', (req, res) => {
 // Error handling
 app.use(errorHandler);
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hd-notes')
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  });
+// // Connect to MongoDB
+// mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/hd-notes')
+//   .then(() => {
+//     console.log('Connected to MongoDB');
+//     app.listen(PORT, () => {
+//       console.log(`Server running on port ${PORT}`);
+//     });
+//   })
+//   .catch((error) => {
+//     console.error('MongoDB connection error:', error);
+//     process.exit(1);
+//   });
 
-export default app;
+let isConnected = false;
+async function connectDB() {
+  if (isConnected) return;
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/hd-notes");
+    isConnected = true;
+    console.log("✅ Connected to MongoDB");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err);
+  }
+}
+
+// Vercel serverless function handler
+export default async (req: any, res: any) => {
+  await connectDB();
+  app(req, res);
+};
