@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors'
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
@@ -13,7 +13,36 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://notes-lime-nine.vercel.app',
+]
 
+// Optional: allow preview deployments like https://notes-<branch>-<hash>.vercel.app
+const isAllowedPreview = (origin: string) =>
+  /^https:\/\/notes[-\w]*\.vercel\.app$/.test(origin)
+
+const corsOptions: CorsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests (no Origin header)
+    if (!origin) return callback(null, true)
+
+    const allowed =
+      allowedOrigins.includes(origin) || isAllowedPreview(origin)
+
+    if (allowed) return callback(null, true)
+    return callback(new Error('Not allowed by CORS'))
+  },
+  credentials: true, // required if you send cookies or Authorization headers
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204, // some environments prefer 204
+}
+
+// CORS must be very early
+app.use(cors(corsOptions))
+// Explicitly handle preflight for all routes
+app.options('*', cors(corsOptions))
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -25,23 +54,7 @@ app.use(helmet());
 app.use(limiter);
 
 
-const allowedOrigins = [
-  "http://localhost:5173", 
-  "https://notes-lime-nine.vercel.app"
-];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
