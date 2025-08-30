@@ -98,10 +98,8 @@ async function connectDB() {
     console.error("❌ MongoDB connection error:", err);
   }
 }
-
+connectDB();
 // Vercel serverless function handler
-const handler = serverless(app);
-export default async (req, res) => {
-  await connectDB();
-  return handler(req, res);
-};
+// const handler = serverless(app);
+
+module.exports = app;
