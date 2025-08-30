@@ -13,6 +13,7 @@ import serverless from "serverless-http";
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5001;
 const allowedOrigins = [
   'http://localhost:5173',
