@@ -8,11 +8,11 @@ import { EmailService } from '../services/EmailService';
 
 
 
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI // e.g. "http://localhost:5000/api/auth/google/callback"
-);
+// const client = new OAuth2Client(
+//   process.env.GOOGLE_CLIENT_ID,
+//   process.env.GOOGLE_CLIENT_SECRET,
+//   process.env.GOOGLE_REDIRECT_URI // e.g. "http://localhost:5000/api/auth/google/callback"
+// );
 export class AuthController {
   static async signup(req: Request, res: Response) {
     try {
