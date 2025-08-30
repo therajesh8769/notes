@@ -10,6 +10,9 @@ import notesRoutes from './routes/notes';
 import { errorHandler } from './middleware/errorHandler';
 import serverless from "serverless-http";
 
+
+connectDB();
+
 dotenv.config();
 
 const app = express();
@@ -87,19 +90,6 @@ app.use(errorHandler);
 //     process.exit(1);
 //   });
 
-let isConnected = false;
-async function connectDB() {
-  if (isConnected) return;
-
-  try {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/hd-notes");
-    isConnected = true;
-    console.log("✅ Connected to MongoDB");
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
-  }
-}
-connectDB();
 // Vercel serverless function handler
 // const handler = serverless(app);
 
