@@ -3,6 +3,7 @@ import cors, { CorsOptions } from 'cors'
 import helmet from 'helmet';
 const connectDB = require('./config/db');
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import notesRoutes from './routes/notes';
