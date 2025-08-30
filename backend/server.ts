@@ -102,5 +102,5 @@ connectDB();
 // Vercel serverless function handler
 // const handler = serverless(app);
 
-const handler = serverless(app);
-module.exports = handler;
+
+module.exports = app;
