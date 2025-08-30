@@ -1,8 +1,7 @@
 import express from 'express';
 import cors, { CorsOptions } from 'cors'
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import mongoose from 'mongoose';
+const connectDB = require('./config/db');
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
