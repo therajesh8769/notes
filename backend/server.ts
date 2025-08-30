@@ -23,10 +23,26 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 app.use(limiter);
-app.use(cors({
-  origin: "https://notes-lime-nine.vercel.app",
-  credentials: true,
-}));
+import cors from "cors";
+
+const allowedOrigins = [
+  "http://localhost:5173", 
+  "https://notes-lime-nine.vercel.app"
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
