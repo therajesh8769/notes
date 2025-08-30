@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
 import notesRoutes from './routes/notes';
 import { errorHandler } from './middleware/errorHandler';
+import serverless from "serverless-http";
 
 dotenv.config();
 
@@ -99,7 +100,8 @@ async function connectDB() {
 }
 
 // Vercel serverless function handler
-export default async (req: any, res: any) => {
+const handler = serverless(app);
+export default async (req, res) => {
   await connectDB();
-  app(req, res);
+  return handler(req, res);
 };
