@@ -1,9 +1,10 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { Trash2, Calendar } from 'lucide-react';
-import { notesAPI } from '../services/api';
+import { Trash2, Calendar, Edit3 } from 'lucide-react';
+import { notesAPI } from '../services/api.js';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { EditNoteModal } from './EditNoteModal.js';
 
 interface Note {
   _id: string;
@@ -15,6 +16,8 @@ interface Note {
 
 export const NotesList: React.FC = () => {
   const queryClient = useQueryClient();
+  const [selectedNote, setSelectedNote] = React.useState<Note | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
   const { data: notesData, isLoading, error } = useQuery('notes', notesAPI.getNotes, {
     retry: 1,
@@ -40,6 +43,16 @@ export const NotesList: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleNoteClick = (note: Note) => {
+    setSelectedNote(note);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedNote(null);
   };
 
   if (isLoading) {
@@ -86,45 +99,95 @@ export const NotesList: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
-      {notes.map((note) => (
-        <div key={note._id} className="bg-white rounded-2xl lg:rounded-lg shadow-sm hover:shadow-md transition-shadow border">
-          {/* Mobile Layout */}
-          <div className="lg:hidden p-4 flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="text-lg font-medium text-gray-900">{note.title}</h3>
-            </div>
-            <button
-              onClick={() => handleDelete(note._id)}
-              className="text-gray-400 hover:text-red-600 transition-colors p-2"
-              disabled={deleteMutation.isLoading}
-            >
-              <Trash2 className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Desktop Layout */}
-          <div className="hidden lg:block p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{note.title}</h3>
-              <button
-                onClick={() => handleDelete(note._id)}
-                className="text-gray-400 hover:text-red-600 transition-colors"
-                disabled={deleteMutation.isLoading}
+    <>
+      <div className="space-y-4 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-6 lg:space-y-0">
+        {notes.map((note) => (
+          <div key={note._id} className="bg-white rounded-2xl lg:rounded-lg shadow-sm hover:shadow-md transition-all duration-200 border group cursor-pointer">
+            {/* Mobile Layout */}
+            <div className="lg:hidden p-4">
+              <div 
+                className="flex-1 mb-3"
+                onClick={() => handleNoteClick(note)}
               >
-                <Trash2 className="h-4 w-4" />
-              </button>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">{note.title}</h3>
+                <p className="text-gray-600 text-sm line-clamp-2 mb-2">{note.content}</p>
+                <div className="flex items-center text-xs text-gray-500">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {format(new Date(note.createdAt), 'MMM d, yyyy')}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleNoteClick(note);
+                  }}
+                  className="text-primary-500 hover:text-primary-600 transition-colors text-sm font-medium"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(note._id);
+                  }}
+                  className="text-gray-400 hover:text-red-600 transition-colors p-2"
+                  disabled={deleteMutation.isLoading}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
             </div>
-            
-            <p className="text-gray-600 text-sm mb-4 line-clamp-3">{note.content}</p>
-            
-            <div className="flex items-center text-xs text-gray-500">
-              <Calendar className="h-3 w-3 mr-1" />
-              {format(new Date(note.createdAt), 'MMM d, yyyy')}
+
+            {/* Desktop Layout */}
+            <div className="hidden lg:block p-6">
+              <div 
+                className="cursor-pointer"
+                onClick={() => handleNoteClick(note)}
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">{note.title}</h3>
+                  <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNoteClick(note);
+                      }}
+                      className="text-gray-400 hover:text-primary-600 transition-colors"
+                      title="Edit note"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(note._id);
+                      }}
+                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      disabled={deleteMutation.isLoading}
+                      title="Delete note"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3">{note.content}</p>
+                
+                <div className="flex items-center text-xs text-gray-500">
+                  <Calendar className="h-3 w-3 mr-1" />
+                  {format(new Date(note.createdAt), 'MMM d, yyyy')}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <EditNoteModal
+        isOpen={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        note={selectedNote}
+      />
+    </>
   );
 };
