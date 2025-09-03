@@ -8,7 +8,10 @@ export class NotesController {
       const userId = req.user!._id;
       const notes = await Note.find({ userId }).sort({ createdAt: -1 });
       
-      res.status(200).json(notes);
+      res.status(200).json({
+        notes,
+        count: notes.length
+      });
     } catch (error) {
       console.error('Get notes error:', error);
       res.status(500).json({ message: 'Internal server error' });

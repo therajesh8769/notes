@@ -23,7 +23,8 @@ export const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ isOpen, onClos
       setFormData({ title: '', content: '' });
       onClose();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Failed to create note:', error);
       toast.error('Failed to create note');
     },
   });

@@ -48,7 +48,7 @@ export class AuthController {
         await user.save();
       }
 
-      // Send OTP via email 
+      // Send OTP via email (simulated)
       await EmailService.sendOTP(email, otp);
 
       res.status(200).json({
@@ -89,9 +89,12 @@ export class AuthController {
       // Generate JWT
       const token = jwt.sign(
         { userId: user._id },
-        process.env.JWT_SECRET!,
+        process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '7d' }
       );
+
+      // Send welcome email
+      await EmailService.sendWelcomeEmail(user.email, user.name);
 
       res.status(200).json({
         message: 'Account verified successfully',
@@ -126,7 +129,7 @@ export class AuthController {
       user.otpExpires = otpExpires;
       await user.save();
 
-      // Send OTP via email 
+      // Send OTP via email (simulated)
       await EmailService.sendOTP(email, otp);
 
       res.status(200).json({
@@ -164,7 +167,7 @@ export class AuthController {
       // Generate JWT
       const token = jwt.sign(
         { userId: user._id },
-        process.env.JWT_SECRET!,
+        process.env.JWT_SECRET || 'fallback-secret',
         { expiresIn: '7d' }
       );
 

@@ -1,100 +1,3 @@
-// import React from 'react';
-// import { useQuery, useMutation, useQueryClient } from 'react-query';
-// import { Trash2, Calendar } from 'lucide-react';
-// import { notesAPI } from '../services/api';
-// import toast from 'react-hot-toast';
-// import { format } from 'date-fns';
-
-// interface Note {
-//   _id: string;
-//   title: string;
-//   content: string;
-//   createdAt: string;
-//   updatedAt: string;
-// }
-
-// export const NotesList: React.FC = () => {
-//   const queryClient = useQueryClient();
-
-//   const { data: notes, isLoading, error } = useQuery<Note[]>('notes', notesAPI.getNotes);
-
-//   const deleteMutation = useMutation(notesAPI.deleteNote, {
-//     onSuccess: () => {
-//       queryClient.invalidateQueries('notes');
-//       toast.success('Note deleted successfully');
-//     },
-//     onError: () => {
-//       toast.error('Failed to delete note');
-//     },
-//   });
-
-//   const handleDelete = (id: string) => {
-//     if (window.confirm('Are you sure you want to delete this note?')) {
-//       deleteMutation.mutate(id);
-//     }
-//   };
-
-//   if (isLoading) {
-//     return (
-//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-//         {[...Array(6)].map((_, i) => (
-//           <div key={i} className="bg-white p-6 rounded-lg shadow-sm animate-pulse">
-//             <div className="h-4 bg-gray-200 rounded mb-4"></div>
-//             <div className="space-y-2">
-//               <div className="h-3 bg-gray-200 rounded"></div>
-//               <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <div className="text-center py-12">
-//         <p className="text-red-600">Failed to load notes</p>
-//       </div>
-//     );
-//   }
-
-//   if (!notes || notes.length === 0) {
-//     return (
-//       <div className="text-center py-12">
-//         <div className="bg-white rounded-lg shadow-sm p-8">
-//           <h3 className="text-lg font-medium text-gray-900 mb-2">No notes yet</h3>
-//           <p className="text-gray-600">Create your first note to get started!</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-//       {notes.map((note) => (
-//         <div key={note._id} className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-//           <div className="flex justify-between items-start mb-4">
-//             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{note.title}</h3>
-//             <button
-//               onClick={() => handleDelete(note._id)}
-//               className="text-gray-400 hover:text-red-600 transition-colors"
-//               disabled={deleteMutation.isLoading}
-//             >
-//               <Trash2 className="h-4 w-4" />
-//             </button>
-//           </div>
-          
-//           <p className="text-gray-600 text-sm mb-4 line-clamp-3">{note.content}</p>
-          
-//           <div className="flex items-center text-xs text-gray-500">
-//             <Calendar className="h-3 w-3 mr-1" />
-//             {format(new Date(note.createdAt), 'MMM d, yyyy')}
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { Trash2, Calendar } from 'lucide-react';
@@ -113,7 +16,15 @@ interface Note {
 export const NotesList: React.FC = () => {
   const queryClient = useQueryClient();
 
-  const { data: notes, isLoading, error } = useQuery<Note[]>('notes', notesAPI.getNotes);
+  const { data: notesData, isLoading, error } = useQuery('notes', notesAPI.getNotes, {
+    retry: 1,
+    onError: (error: any) => {
+      console.error('Failed to fetch notes:', error);
+      toast.error('Failed to load notes');
+    }
+  });
+
+  const notes = notesData?.notes || notesData || [];
 
   const deleteMutation = useMutation(notesAPI.deleteNote, {
     onSuccess: () => {
@@ -150,12 +61,20 @@ export const NotesList: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Failed to load notes</p>
+        <div className="bg-white rounded-2xl lg:rounded-lg shadow-sm p-8 border">
+          <p className="text-red-600 mb-2">Failed to load notes</p>
+          <button 
+            onClick={() => queryClient.invalidateQueries('notes')}
+            className="text-primary-500 hover:text-primary-600 text-sm"
+          >
+            Try again
+          </button>
+        </div>
       </div>
     );
   }
 
-  if (!notes || notes.length === 0) {
+  if (!notes || !Array.isArray(notes) || notes.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="bg-white rounded-2xl lg:rounded-lg shadow-sm p-8 border">

@@ -50,12 +50,17 @@ export const authAPI = {
 export const notesAPI = {
   getNotes: async () => {
     const response = await api.get('/notes');
-    return response.data;
+    return response.data.notes || response.data;
   },
 
   createNote: async (data: { title: string; content: string }) => {
     const response = await api.post('/notes', data);
-    return response.data;
+    return response.data.note || response.data;
+  },
+
+  updateNote: async (id: string, data: { title: string; content: string }) => {
+    const response = await api.put(`/notes/${id}`, data);
+    return response.data.note || response.data;
   },
 
   deleteNote: async (id: string) => {
